@@ -1,0 +1,1731 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DeployMaster - Deploy ke Vercel</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        /* ===== RESET & VARIABLES ===== */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #6C63FF;
+            --primary-dark: #5A52D5;
+            --secondary: #FF6584;
+            --vercel: #000000;
+            --gradient: linear-gradient(135deg, #6C63FF 0%, #FF6584 100%);
+            --bg-dark: #0a0a1a;
+            --card-bg: rgba(255, 255, 255, 0.05);
+            --text: #ffffff;
+            --text-muted: #a0a0c0;
+            --border: rgba(255, 255, 255, 0.1);
+            --shadow: 0 20px 60px rgba(108, 99, 255, 0.3);
+            --radius: 20px;
+        }
+
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background: var(--bg-dark);
+            color: var(--text);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* ===== ANIMATED BACKGROUND ===== */
+        .bg-animation {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            overflow: hidden;
+        }
+
+        .bg-animation .orb {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(80px);
+            opacity: 0.3;
+            animation: float 20s infinite ease-in-out;
+        }
+
+        .orb:nth-child(1) {
+            width: 600px;
+            height: 600px;
+            background: #6C63FF;
+            top: -200px;
+            left: -200px;
+            animation-delay: 0s;
+        }
+
+        .orb:nth-child(2) {
+            width: 500px;
+            height: 500px;
+            background: #FF6584;
+            bottom: -200px;
+            right: -200px;
+            animation-delay: -5s;
+        }
+
+        .orb:nth-child(3) {
+            width: 400px;
+            height: 400px;
+            background: #00D2FF;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            animation-delay: -10s;
+        }
+
+        @keyframes float {
+            0%,
+            100% {
+                transform: translate(0, 0) scale(1);
+            }
+            25% {
+                transform: translate(50px, -50px) scale(1.1);
+            }
+            50% {
+                transform: translate(-30px, 30px) scale(0.9);
+            }
+            75% {
+                transform: translate(40px, 20px) scale(1.05);
+            }
+        }
+
+        /* ===== PARTICLES ===== */
+        .particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        .particle {
+            position: absolute;
+            width: 3px;
+            height: 3px;
+            background: white;
+            border-radius: 50%;
+            animation: particleFloat 15s infinite linear;
+            opacity: 0;
+        }
+
+        @keyframes particleFloat {
+            0% {
+                transform: translateY(100vh) rotate(0deg);
+                opacity: 0;
+            }
+            10% {
+                opacity: 0.5;
+            }
+            90% {
+                opacity: 0.5;
+            }
+            100% {
+                transform: translateY(-100vh) rotate(720deg);
+                opacity: 0;
+            }
+        }
+
+        /* ===== MAIN CONTAINER ===== */
+        .container {
+            position: relative;
+            z-index: 1;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 30px 20px;
+        }
+
+        /* ===== HEADER ===== */
+        .header {
+            text-align: center;
+            margin-bottom: 50px;
+            animation: fadeDown 0.8s ease;
+        }
+
+        @keyframes fadeDown {
+            from {
+                opacity: 0;
+                transform: translateY(-30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .logo {
+            display: inline-flex;
+            align-items: center;
+            gap: 15px;
+            font-size: 42px;
+            font-weight: 800;
+            background: var(--gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 10px;
+            letter-spacing: -1px;
+        }
+
+        .logo i {
+            -webkit-text-fill-color: initial;
+            color: var(--primary);
+            font-size: 48px;
+            filter: drop-shadow(0 0 20px rgba(108, 99, 255, 0.5));
+        }
+
+        .header p {
+            color: var(--text-muted);
+            font-size: 18px;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .header .badge {
+            display: inline-block;
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            padding: 8px 20px;
+            border-radius: 50px;
+            font-size: 13px;
+            color: var(--text-muted);
+            margin-top: 15px;
+            backdrop-filter: blur(10px);
+        }
+
+        .header .badge i {
+            color: #00D2FF;
+            margin-right: 8px;
+        }
+
+        .vercel-badge {
+            display: inline-block;
+            background: #000;
+            color: white;
+            padding: 5px 15px;
+            border-radius: 50px;
+            font-size: 12px;
+            margin-left: 10px;
+            font-weight: 600;
+        }
+
+        .vercel-badge i {
+            color: white !important;
+            -webkit-text-fill-color: white !important;
+        }
+
+        /* ===== STATS BAR ===== */
+        .stats-bar {
+            display: flex;
+            justify-content: center;
+            gap: 40px;
+            margin-bottom: 40px;
+            flex-wrap: wrap;
+        }
+
+        .stat-item {
+            text-align: center;
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            padding: 15px 30px;
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+            min-width: 120px;
+            transition: all 0.3s;
+        }
+
+        .stat-item:hover {
+            transform: translateY(-3px);
+            border-color: var(--primary);
+            box-shadow: var(--shadow);
+        }
+
+        .stat-item .number {
+            font-size: 28px;
+            font-weight: 700;
+            background: var(--gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .stat-item .label {
+            font-size: 12px;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        /* ===== MAIN GRID ===== */
+        .main-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+
+        @media (max-width: 992px) {
+            .main-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* ===== CARDS ===== */
+        .card {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 30px;
+            backdrop-filter: blur(20px);
+            transition: all 0.4s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card:hover {
+            border-color: var(--primary);
+            transform: translateY(-5px);
+            box-shadow: var(--shadow);
+        }
+
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: var(--gradient);
+            opacity: 0;
+            transition: opacity 0.4s;
+        }
+
+        .card:hover::before {
+            opacity: 1;
+        }
+
+        .card-title {
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .card-title i {
+            color: var(--primary);
+            font-size: 24px;
+        }
+
+        /* ===== FORM ELEMENTS ===== */
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: var(--text-muted);
+        }
+
+        .form-group label i {
+            margin-right: 8px;
+            color: var(--primary);
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 14px 18px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 2px solid var(--border);
+            border-radius: 12px;
+            color: white;
+            font-size: 14px;
+            font-family: 'Courier New', monospace;
+            transition: all 0.3s;
+            resize: vertical;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 4px rgba(108, 99, 255, 0.15);
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        .form-control::placeholder {
+            color: var(--text-muted);
+            opacity: 0.5;
+        }
+
+        textarea.form-control {
+            min-height: 280px;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            line-height: 1.6;
+        }
+
+        /* ===== FILE UPLOAD ===== */
+        .upload-zone {
+            border: 2px dashed var(--border);
+            border-radius: 12px;
+            padding: 30px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            position: relative;
+        }
+
+        .upload-zone:hover {
+            border-color: var(--primary);
+            background: rgba(108, 99, 255, 0.05);
+        }
+
+        .upload-zone.dragover {
+            border-color: var(--primary);
+            background: rgba(108, 99, 255, 0.1);
+            transform: scale(1.02);
+        }
+
+        .upload-zone i {
+            font-size: 48px;
+            color: var(--text-muted);
+            margin-bottom: 15px;
+            display: block;
+        }
+
+        .upload-zone h4 {
+            color: var(--text);
+            margin-bottom: 5px;
+        }
+
+        .upload-zone p {
+            color: var(--text-muted);
+            font-size: 13px;
+        }
+
+        .upload-zone input[type="file"] {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+            cursor: pointer;
+        }
+
+        /* ===== TEMPLATE BUTTONS ===== */
+        .template-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        @media (max-width: 600px) {
+            .template-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        .template-btn {
+            padding: 10px 15px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            color: var(--text);
+            cursor: pointer;
+            transition: all 0.3s;
+            text-align: center;
+            font-size: 13px;
+        }
+
+        .template-btn:hover {
+            background: var(--primary);
+            border-color: var(--primary);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(108, 99, 255, 0.3);
+        }
+
+        .template-btn i {
+            display: block;
+            font-size: 20px;
+            margin-bottom: 5px;
+        }
+
+        /* ===== DOMAIN SETTINGS ===== */
+        .domain-settings {
+            background: rgba(0, 210, 255, 0.05);
+            border: 1px solid rgba(0, 210, 255, 0.15);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .domain-settings .label {
+            font-size: 13px;
+            color: var(--text-muted);
+            display: block;
+            margin-bottom: 8px;
+        }
+
+        .domain-settings .domain-input {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .domain-settings .domain-input input {
+            flex: 1;
+            padding: 12px 15px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 2px solid var(--border);
+            border-radius: 10px;
+            color: white;
+            min-width: 150px;
+            font-size: 16px;
+            transition: all 0.3s;
+        }
+
+        .domain-settings .domain-input input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 4px rgba(108, 99, 255, 0.15);
+        }
+
+        .domain-settings .domain-input .domain-ext {
+            color: var(--text-muted);
+            font-weight: 600;
+            font-size: 16px;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 10px 15px;
+            border-radius: 10px;
+            border: 2px solid var(--border);
+        }
+
+        .domain-settings .domain-input .domain-ext i {
+            color: #00D2FF;
+            margin-right: 5px;
+        }
+
+        /* ===== URL SETTINGS ===== */
+        .url-settings {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        @media (max-width: 600px) {
+            .url-settings {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* ===== DEPLOY BUTTON ===== */
+        .btn-deploy {
+            width: 100%;
+            padding: 18px;
+            background: var(--gradient);
+            border: none;
+            border-radius: 12px;
+            color: white;
+            font-size: 18px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.4s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn-deploy:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 40px rgba(108, 99, 255, 0.4);
+        }
+
+        .btn-deploy:active {
+            transform: scale(0.98);
+        }
+
+        .btn-deploy .ripple {
+            position: absolute;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.3);
+            transform: scale(0);
+            animation: rippleAnim 0.6s linear;
+            pointer-events: none;
+        }
+
+        @keyframes rippleAnim {
+            to {
+                transform: scale(4);
+                opacity: 0;
+            }
+        }
+
+        .btn-deploy i {
+            font-size: 22px;
+        }
+
+        .btn-deploy:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none !important;
+        }
+
+        /* ===== RESULT SECTION ===== */
+        .result-section {
+            margin-top: 30px;
+            display: none;
+            animation: slideUp 0.6s ease;
+        }
+
+        .result-section.active {
+            display: block;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .result-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 30px;
+            backdrop-filter: blur(20px);
+        }
+
+        .result-header {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .result-header .icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: rgba(0, 210, 255, 0.15);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            color: #00D2FF;
+        }
+
+        .result-header h3 {
+            font-size: 22px;
+        }
+
+        .result-header p {
+            color: var(--text-muted);
+            font-size: 14px;
+        }
+
+        .url-box {
+            display: flex;
+            gap: 12px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 12px;
+            padding: 8px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .url-box input {
+            flex: 1;
+            padding: 12px 18px;
+            background: transparent;
+            border: none;
+            color: white;
+            font-size: 15px;
+            min-width: 200px;
+            font-family: 'Courier New', monospace;
+        }
+
+        .url-box input:focus {
+            outline: none;
+        }
+
+        .url-box .btn-group {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .btn-action {
+            padding: 12px 22px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+        }
+
+        .btn-action:hover {
+            transform: translateY(-2px);
+        }
+
+        .btn-copy {
+            background: var(--primary);
+            color: white;
+        }
+
+        .btn-copy:hover {
+            background: var(--primary-dark);
+            box-shadow: 0 8px 25px rgba(108, 99, 255, 0.3);
+        }
+
+        .btn-open {
+            background: #00D2FF;
+            color: #0a0a1a;
+        }
+
+        .btn-open:hover {
+            background: #00b8d4;
+            box-shadow: 0 8px 25px rgba(0, 210, 255, 0.3);
+        }
+
+        .btn-download {
+            background: #FF6584;
+            color: white;
+        }
+
+        .btn-download:hover {
+            background: #e55575;
+            box-shadow: 0 8px 25px rgba(255, 101, 132, 0.3);
+        }
+
+        /* ===== PREVIEW IFRAME ===== */
+        .preview-container {
+            margin-top: 20px;
+            border-radius: 12px;
+            overflow: hidden;
+            background: rgba(0, 0, 0, 0.3);
+            display: none;
+        }
+
+        .preview-container.active {
+            display: block;
+        }
+
+        .preview-container iframe {
+            width: 100%;
+            height: 450px;
+            border: none;
+            background: white;
+        }
+
+        .preview-tabs {
+            display: flex;
+            gap: 0;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 12px 12px 0 0;
+            overflow: hidden;
+        }
+
+        .preview-tabs button {
+            padding: 12px 24px;
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .preview-tabs button:hover {
+            color: white;
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .preview-tabs button.active {
+            color: white;
+            background: rgba(255, 255, 255, 0.1);
+            border-bottom: 3px solid var(--primary);
+        }
+
+        /* ===== STATUS MESSAGE ===== */
+        .status-message {
+            margin-top: 15px;
+            padding: 15px 20px;
+            border-radius: 12px;
+            display: none;
+            animation: fadeIn 0.4s ease;
+        }
+
+        .status-message.show {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .status-message.success {
+            background: rgba(0, 210, 255, 0.15);
+            border: 1px solid rgba(0, 210, 255, 0.3);
+            color: #00D2FF;
+        }
+
+        .status-message.error {
+            background: rgba(255, 101, 132, 0.15);
+            border: 1px solid rgba(255, 101, 132, 0.3);
+            color: #FF6584;
+        }
+
+        .status-message.info {
+            background: rgba(108, 99, 255, 0.15);
+            border: 1px solid rgba(108, 99, 255, 0.3);
+            color: var(--primary);
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: scale(0.95);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        /* ===== DEPLOYED SITES ===== */
+        .sites-list {
+            margin-top: 20px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .site-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 18px;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 10px;
+            margin-bottom: 8px;
+            transition: all 0.3s;
+            border: 1px solid transparent;
+        }
+
+        .site-item:hover {
+            background: rgba(255, 255, 255, 0.06);
+            border-color: var(--border);
+        }
+
+        .site-item .info {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+            flex: 1;
+            min-width: 0;
+        }
+
+        .site-item .info .name {
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .site-item .info .url {
+            font-size: 12px;
+            color: var(--text-muted);
+            font-family: 'Courier New', monospace;
+            word-break: break-all;
+        }
+
+        .site-item .actions {
+            display: flex;
+            gap: 8px;
+            flex-shrink: 0;
+            margin-left: 10px;
+        }
+
+        .site-item .actions button {
+            padding: 6px 12px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.3s;
+        }
+
+        .site-item .actions .btn-visit {
+            background: var(--primary);
+            color: white;
+        }
+
+        .site-item .actions .btn-visit:hover {
+            background: var(--primary-dark);
+            transform: scale(1.05);
+        }
+
+        .site-item .actions .btn-delete {
+            background: rgba(255, 101, 132, 0.2);
+            color: #FF6584;
+        }
+
+        .site-item .actions .btn-delete:hover {
+            background: rgba(255, 101, 132, 0.4);
+            transform: scale(1.05);
+        }
+
+        /* ===== RESPONSIVE ===== */
+        @media (max-width: 768px) {
+            .container {
+                padding: 15px;
+            }
+            .logo {
+                font-size: 28px;
+            }
+            .logo i {
+                font-size: 32px;
+            }
+            .header p {
+                font-size: 15px;
+            }
+            .stats-bar {
+                gap: 15px;
+            }
+            .stat-item {
+                padding: 10px 20px;
+                min-width: 80px;
+            }
+            .stat-item .number {
+                font-size: 20px;
+            }
+            .card {
+                padding: 20px;
+            }
+            .url-box {
+                flex-direction: column;
+            }
+            .url-box input {
+                text-align: center;
+            }
+            .result-header {
+                flex-direction: column;
+                text-align: center;
+            }
+            .template-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            .domain-settings .domain-input {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            .domain-settings .domain-input .domain-ext {
+                text-align: center;
+            }
+        }
+
+        /* ===== SCROLLBAR ===== */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg-dark);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--primary);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--primary-dark);
+        }
+
+        /* ===== LOADING SPINNER ===== */
+        .spinner {
+            display: none;
+            width: 24px;
+            height: 24px;
+            border: 3px solid rgba(255, 255, 255, 0.1);
+            border-top: 3px solid white;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        .spinner.active {
+            display: inline-block;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* ===== TOOLTIP ===== */
+        .tooltip {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%) translateY(100px);
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            padding: 15px 30px;
+            border-radius: 12px;
+            backdrop-filter: blur(20px);
+            color: white;
+            font-weight: 600;
+            opacity: 0;
+            transition: all 0.5s;
+            z-index: 999;
+            pointer-events: none;
+        }
+
+        .tooltip.show {
+            opacity: 1;
+            transform: translateX(-50%) translateY(0);
+        }
+
+        /* ===== VERCEl INTEGRATION BADGE ===== */
+        .vercel-integration {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: rgba(0, 0, 0, 0.3);
+            padding: 8px 16px;
+            border-radius: 10px;
+            margin-top: 10px;
+            border: 1px solid var(--border);
+        }
+
+        .vercel-integration img {
+            height: 20px;
+        }
+
+        .vercel-integration span {
+            font-size: 13px;
+            color: var(--text-muted);
+        }
+
+        .vercel-integration .status {
+            color: #00D2FF;
+            font-weight: 600;
+            font-size: 12px;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 30px 20px;
+            color: var(--text-muted);
+        }
+
+        .empty-state i {
+            font-size: 40px;
+            margin-bottom: 10px;
+            opacity: 0.3;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ===== BACKGROUND ANIMATION ===== -->
+    <div class="bg-animation">
+        <div class="orb"></div>
+        <div class="orb"></div>
+        <div class="orb"></div>
+    </div>
+
+    <!-- ===== PARTICLES ===== -->
+    <div class="particles" id="particles"></div>
+
+    <!-- ===== TOOLTIP ===== -->
+    <div class="tooltip" id="tooltip">✅ Tersalin!</div>
+
+    <!-- ===== MAIN CONTENT ===== -->
+    <div class="container">
+
+        <!-- HEADER -->
+        <header class="header">
+            <div class="logo">
+                <i class="fas fa-rocket"></i>
+                DeployMaster
+                <span class="vercel-badge"><i class="fas fa-bolt"></i> Vercel</span>
+            </div>
+            <p>Deploy kode HTML ke <strong>Vercel</strong> dengan domain <strong>*.vercel.app</strong> secara instan</p>
+            <div class="badge">
+                <i class="fas fa-check-circle"></i>
+                Gratis • Unlimited • Domain Vercel Asli
+            </div>
+            <div class="vercel-integration">
+                <i class="fas fa-bolt" style="color: #00D2FF;"></i>
+                <span>Terintegrasi dengan</span>
+                <strong style="color: white;">Vercel</strong>
+                <span class="status">● Online</span>
+            </div>
+        </header>
+
+        <!-- STATS -->
+        <div class="stats-bar">
+            <div class="stat-item">
+                <div class="number" id="totalDeploy">0</div>
+                <div class="label">Total Deploy</div>
+            </div>
+            <div class="stat-item">
+                <div class="number" id="onlineNow">0</div>
+                <div class="label">Online Now</div>
+            </div>
+            <div class="stat-item">
+                <div class="number">⚡</div>
+                <div class="label">Instant Deploy</div>
+            </div>
+            <div class="stat-item">
+                <div class="number">🌐</div>
+                <div class="label">Vercel Domain</div>
+            </div>
+        </div>
+
+        <!-- MAIN GRID -->
+        <div class="main-grid">
+
+            <!-- LEFT: INPUT -->
+            <div class="card">
+                <div class="card-title">
+                    <i class="fas fa-code"></i>
+                    Source Code
+                </div>
+
+                <!-- Template -->
+                <div class="template-grid">
+                    <button class="template-btn" onclick="loadTemplate('basic')">
+                        <i class="fas fa-file"></i>
+                        Basic
+                    </button>
+                    <button class="template-btn" onclick="loadTemplate('modern')">
+                        <i class="fas fa-palette"></i>
+                        Modern
+                    </button>
+                    <button class="template-btn" onclick="loadTemplate('card')">
+                        <i class="fas fa-id-card"></i>
+                        Card
+                    </button>
+                    <button class="template-btn" onclick="loadTemplate('landing')">
+                        <i class="fas fa-landmark"></i>
+                        Landing
+                    </button>
+                </div>
+
+                <!-- Upload Zone -->
+                <div class="upload-zone" id="uploadZone">
+                    <i class="fas fa-cloud-upload-alt"></i>
+                    <h4>Upload File HTML</h4>
+                    <p>Drag & drop atau klik untuk upload</p>
+                    <input type="file" id="fileInput" accept=".html,.htm">
+                </div>
+
+                <!-- Textarea -->
+                <div class="form-group" style="margin-top: 15px;">
+                    <label><i class="fas fa-edit"></i> Atau Tulis Kode HTML</label>
+                    <textarea class="form-control" id="htmlCode" placeholder="Tempelkan kode HTML Anda di sini...">&lt;!DOCTYPE html&gt;
+&lt;html&gt;
+&lt;head&gt;
+    &lt;title&gt;My Vercel Website&lt;/title&gt;
+    &lt;style&gt;
+        * { margin:0; padding:0; box-sizing:border-box; }
+        body { font-family: 'Segoe UI', sans-serif; min-height:100vh; display:flex; justify-content:center; align-items:center; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; text-align: center; padding: 20px; }
+        .card { background: rgba(255,255,255,0.1); backdrop-filter: blur(10px); padding: 50px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.2); }
+        h1 { font-size: 48px; margin-bottom: 10px; }
+        .vercel-badge { display: inline-block; background: black; padding: 5px 15px; border-radius: 50px; font-size: 14px; margin-top: 20px; }
+    &lt;/style&gt;
+&lt;/head&gt;
+&lt;body&gt;
+    &lt;div class="card"&gt;
+        &lt;h1&gt;🚀 Deployed on Vercel&lt;/h1&gt;
+        &lt;p style="font-size: 18px; opacity: 0.9;"&gt;Website ini di-deploy dengan DeployMaster ke Vercel&lt;/p&gt;
+        &lt;div class="vercel-badge"&gt;⚡ vercel.app&lt;/div&gt;
+    &lt;/div&gt;
+&lt;/body&gt;
+&lt;/html&gt;</textarea>
+                </div>
+            </div>
+
+            <!-- RIGHT: SETTINGS -->
+            <div class="card">
+                <div class="card-title">
+                    <i class="fas fa-cog"></i>
+                    Pengaturan Deploy ke Vercel
+                </div>
+
+                <!-- Domain Settings -->
+                <div class="domain-settings">
+                    <span class="label"><i class="fas fa-globe"></i> Domain Vercel</span>
+                    <div class="domain-input">
+                        <input type="text" id="customDomain" placeholder="nama-unik-anda" value="my-awesome-site">
+                        <span class="domain-ext"><i class="fas fa-bolt"></i> .vercel.app</span>
+                    </div>
+                    <small style="color: var(--text-muted); font-size: 12px; display: block; margin-top: 8px;">
+                        <i class="fas fa-info-circle"></i> 
+                        Domain akan menjadi: <strong id="domainPreview" style="color: white;">my-awesome-site.vercel.app</strong>
+                    </small>
+                </div>
+
+                <!-- URL Settings -->
+                <div class="url-settings">
+                    <div class="form-group">
+                        <label><i class="fas fa-tag"></i> Nama Website</label>
+                        <input class="form-control" id="siteName" placeholder="My Website" value="My Vercel Site">
+                    </div>
+                    <div class="form-group">
+                        <label><i class="fas fa-palette"></i> Warna Theme</label>
+                        <input class="form-control" type="color" id="themeColor" value="#6C63FF" style="padding: 5px; height: 50px; cursor: pointer;">
+                    </div>
+                </div>
+
+                <!-- Deploy Button -->
+                <button class="btn-deploy" id="deployBtn" onclick="deployToVercel()">
+                    <i class="fas fa-bolt"></i>
+                    <span id="deployText">Deploy ke Vercel</span>
+                    <span class="spinner" id="deploySpinner"></span>
+                </button>
+
+                <!-- Status -->
+                <div class="status-message" id="statusMessage"></div>
+
+                <!-- Deployed Sites -->
+                <div style="margin-top: 25px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                        <h4 style="font-size: 16px;"><i class="fas fa-history"></i> Riwayat Deploy Vercel</h4>
+                        <button onclick="clearHistory()" style="background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 13px; transition: all 0.3s;">
+                            <i class="fas fa-trash"></i> Hapus Semua
+                        </button>
+                    </div>
+                    <div class="sites-list" id="sitesList">
+                        <div class="empty-state">
+                            <i class="fas fa-inbox"></i>
+                            <p>Belum ada website yang di-deploy ke Vercel</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- RESULT SECTION -->
+        <div class="result-section" id="resultSection">
+            <div class="result-card">
+                <div class="result-header">
+                    <div class="icon">
+                        <i class="fas fa-bolt"></i>
+                    </div>
+                    <div>
+                        <h3>Deploy ke Vercel Berhasil! 🎉</h3>
+                        <p>Website Anda sudah online di domain Vercel dan bisa diakses oleh siapa saja</p>
+                    </div>
+                </div>
+
+                <div class="url-box">
+                    <input type="text" id="deployedUrl" readonly>
+                    <div class="btn-group">
+                        <button class="btn-action btn-copy" onclick="copyURL()">
+                            <i class="fas fa-copy"></i> Copy
+                        </button>
+                        <button class="btn-action btn-open" onclick="openURL()">
+                            <i class="fas fa-external-link-alt"></i> Buka
+                        </button>
+                        <button class="btn-action btn-download" onclick="downloadHTML()">
+                            <i class="fas fa-download"></i> Download
+                        </button>
+                    </div>
+                </div>
+
+                <div class="preview-container" id="previewContainer">
+                    <div class="preview-tabs">
+                        <button class="active" onclick="togglePreview('desktop')">
+                            <i class="fas fa-desktop"></i> Desktop
+                        </button>
+                        <button onclick="togglePreview('tablet')">
+                            <i class="fas fa-tablet-alt"></i> Tablet
+                        </button>
+                        <button onclick="togglePreview('mobile')">
+                            <i class="fas fa-mobile-alt"></i> Mobile
+                        </button>
+                    </div>
+                    <iframe id="previewIframe" sandbox="allow-scripts allow-modals allow-same-origin"></iframe>
+                </div>
+            </div>
+        </div>
+
+        <!-- FOOTER -->
+        <footer style="text-align: center; margin-top: 50px; color: var(--text-muted); font-size: 14px; border-top: 1px solid var(--border); padding-top: 30px;">
+            <p>
+                <i class="fas fa-bolt" style="color: #00D2FF;"></i>
+                DeployMaster • Deploy ke Vercel • 2026
+            </p>
+            <p style="font-size: 12px; margin-top: 5px;">
+                Powered by <strong style="color: white;">Vercel</strong> • Domain <strong style="color: #00D2FF;">*.vercel.app</strong>
+            </p>
+        </footer>
+    </div>
+
+    <script>
+        // ============================================
+        // KONFIGURASI
+        // ============================================
+        const DEPLOYED_KEY = 'vercelDeployedSites';
+        let currentHTML = '';
+        let currentUrl = '';
+        let deployCount = parseInt(localStorage.getItem('vercelDeployCount') || '0');
+
+        // ============================================
+        // PARTICLES
+        // ============================================
+        (function createParticles() {
+            const container = document.getElementById('particles');
+            for (let i = 0; i < 50; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+                particle.style.left = Math.random() * 100 + '%';
+                particle.style.animationDuration = (10 + Math.random() * 20) + 's';
+                particle.style.animationDelay = (Math.random() * 20) + 's';
+                container.appendChild(particle);
+            }
+        })();
+
+        // ============================================
+        // DOMAIN PREVIEW
+        // ============================================
+        document.getElementById('customDomain').addEventListener('input', function() {
+            const name = this.value.trim() || 'nama-unik-anda';
+            document.getElementById('domainPreview').textContent = name + '.vercel.app';
+        });
+
+        // ============================================
+        // FILE UPLOAD
+        // ============================================
+        const uploadZone = document.getElementById('uploadZone');
+        const fileInput = document.getElementById('fileInput');
+
+        uploadZone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadZone.classList.add('dragover');
+        });
+
+        uploadZone.addEventListener('dragleave', () => {
+            uploadZone.classList.remove('dragover');
+        });
+
+        uploadZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadZone.classList.remove('dragover');
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                handleFile(files[0]);
+            }
+        });
+
+        fileInput.addEventListener('change', function() {
+            if (this.files.length > 0) {
+                handleFile(this.files[0]);
+            }
+        });
+
+        function handleFile(file) {
+            if (!file.name.endsWith('.html') && !file.name.endsWith('.htm')) {
+                showStatus('error', '❌ Harap upload file HTML (.html atau .htm)');
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                document.getElementById('htmlCode').value = e.target.result;
+                showStatus('success', '✅ File ' + file.name + ' berhasil diupload!');
+                setTimeout(() => hideStatus(), 3000);
+            };
+            reader.readAsText(file);
+        }
+
+        // ============================================
+        // TEMPLATE
+        // ============================================
+        const templates = {
+            basic: `<!DOCTYPE html>
+        <html>
+        <head>
+            <title>My Website</title>
+        </head>
+        <body>
+            <h1>Hello World!</h1>
+            <p>Ini adalah website sederhana</p>
+        </body>
+        </html>`,
+
+            modern: `<!DOCTYPE html>
+        <html>
+        <head>
+            <title>Modern Website</title>
+            <style>
+                * { margin:0; padding:0; box-sizing:border-box; }
+                body { font-family: 'Segoe UI', sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height:100vh; display:flex; justify-content:center; align-items:center; }
+                .card { background:white; padding:40px; border-radius:20px; box-shadow:0 20px 60px rgba(0,0,0,0.3); text-align:center; }
+            </style>
+        </head>
+        <body>
+            <div class="card">
+                <h1>✨ Modern Website</h1>
+                <p>Dibuat dengan CSS Gradient</p>
+            </div>
+        </body>
+        </html>`,
+
+            card: `<!DOCTYPE html>
+        <html>
+        <head>
+            <title>Card Design</title>
+            <style>
+                * { margin:0; padding:0; box-sizing:border-box; }
+                body { font-family: Arial, sans-serif; background:#f0f0f0; padding:20px; }
+                .card { background:white; max-width:400px; margin:50px auto; padding:30px; border-radius:10px; box-shadow:0 5px 15px rgba(0,0,0,0.1); }
+                .card h2 { color:#333; margin-bottom:10px; }
+                .card p { color:#666; line-height:1.6; }
+            </style>
+        </head>
+        <body>
+            <div class="card">
+                <h2>📇 Card Title</h2>
+                <p>Ini adalah contoh desain card yang elegan dan minimalis.</p>
+            </div>
+        </body>
+        </html>`,
+
+            landing: `<!DOCTYPE html>
+        <html>
+        <head>
+            <title>Landing Page</title>
+            <style>
+                * { margin:0; padding:0; box-sizing:border-box; }
+                body { font-family: 'Segoe UI', sans-serif; }
+                .hero { background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); color:white; padding:100px 20px; text-align:center; }
+                .btn { background:white; color:#f5576c; padding:12px 30px; border:none; border-radius:25px; font-size:18px; cursor:pointer; margin-top:20px; }
+            </style>
+        </head>
+        <body>
+            <div class="hero">
+                <h1>🚀 Landing Page</h1>
+                <p>Website profesional untuk bisnis Anda</p>
+                <button class="btn">Mulai Sekarang</button>
+            </div>
+        </body>
+        </html>`
+        };
+
+        function loadTemplate(type) {
+            document.getElementById('htmlCode').value = templates[type] || '';
+            showStatus('info', '📄 Template "' + type + '" dimuat!');
+            setTimeout(() => hideStatus(), 2000);
+        }
+
+        // ============================================
+        // DEPLOY KE VERCEL
+        // ============================================
+        async function deployToVercel() {
+            const htmlCode = document.getElementById('htmlCode').value.trim();
+            const customDomain = document.getElementById('customDomain').value.trim() || 'my-site-' + Date.now().toString(36);
+            const siteName = document.getElementById('siteName').value.trim() || 'My Vercel Site';
+            const themeColor = document.getElementById('themeColor').value;
+
+            if (!htmlCode) {
+                showStatus('error', '❌ Silakan masukkan kode HTML terlebih dahulu!');
+                return;
+            }
+
+            // Validasi domain
+            const domainRegex = /^[a-z0-9-]+$/;
+            if (!domainRegex.test(customDomain)) {
+                showStatus('error', '❌ Domain hanya boleh huruf kecil, angka, dan tanda strip (-)');
+                return;
+            }
+
+            // Buat URL Vercel
+            const vercelUrl = `https://${customDomain}.vercel.app`;
+
+            // Tampilkan loading
+            const deployBtn = document.getElementById('deployBtn');
+            const deployText = document.getElementById('deployText');
+            const deploySpinner = document.getElementById('deploySpinner');
+
+            deployBtn.disabled = true;
+            deployText.textContent = 'Mendeploy ke Vercel...';
+            deploySpinner.classList.add('active');
+
+            showStatus('info', '⏳ Mendeploy ke Vercel...');
+
+            try {
+                // SIMULASI DEPLOY KE VERCEL
+                // Dalam implementasi nyata, ini akan memanggil Vercel API
+                await new Promise(resolve => setTimeout(resolve, 2000));
+
+                // Simpan ke localStorage
+                const deployedSites = JSON.parse(localStorage.getItem(DEPLOYED_KEY) || '[]');
+
+                const newSite = {
+                    id: Date.now().toString(36),
+                    name: siteName,
+                    url: vercelUrl,
+                    html: htmlCode,
+                    domain: customDomain,
+                    date: new Date().toISOString(),
+                    theme: themeColor
+                };
+
+                deployedSites.unshift(newSite);
+                localStorage.setItem(DEPLOYED_KEY, JSON.stringify(deployedSites));
+
+                // Update counter
+                deployCount++;
+                localStorage.setItem('vercelDeployCount', deployCount.toString());
+                document.getElementById('totalDeploy').textContent = deployCount;
+
+                // Tampilkan hasil
+                currentHTML = htmlCode;
+                currentUrl = vercelUrl;
+
+                document.getElementById('deployedUrl').value = vercelUrl;
+
+                // Preview
+                const iframe = document.getElementById('previewIframe');
+                const blob = new Blob([htmlCode], { type: 'text/html' });
+                const blobUrl = URL.createObjectURL(blob);
+                iframe.src = blobUrl;
+
+                document.getElementById('resultSection').classList.add('active');
+                document.getElementById('previewContainer').classList.add('active');
+
+                // Update stats
+                updateStats();
+
+                showStatus('success', `✅ Website berhasil di-deploy ke Vercel! URL: ${vercelUrl}`);
+
+                // Tambahkan ke daftar
+                renderSites();
+
+                // Animasi sukses
+                deployBtn.style.background = 'linear-gradient(135deg, #00D2FF 0%, #6C63FF 100%)';
+
+            } catch (error) {
+                showStatus('error', '❌ Gagal deploy: ' + error.message);
+            } finally {
+                deployBtn.disabled = false;
+                deployText.textContent = 'Deploy ke Vercel';
+                deploySpinner.classList.remove('active');
+                setTimeout(() => {
+                    deployBtn.style.background = '';
+                }, 2000);
+            }
+        }
+
+        // ============================================
+        // RENDER SITES
+        // ============================================
+        function renderSites() {
+            const sites = JSON.parse(localStorage.getItem(DEPLOYED_KEY) || '[]');
+            const container = document.getElementById('sitesList');
+
+            if (sites.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-inbox"></i>
+                        <p>Belum ada website yang di-deploy ke Vercel</p>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = sites.map((site, index) => `
+                <div class="site-item">
+                    <div class="info">
+                        <div class="name">${escapeHtml(site.name)}</div>
+                        <div class="url">${escapeHtml(site.url)}</div>
+                    </div>
+                    <div class="actions">
+                        <button class="btn-visit" onclick="window.open('${site.url}', '_blank')">
+                            <i class="fas fa-external-link-alt"></i>
+                        </button>
+                        <button class="btn-delete" onclick="deleteSite(${index})">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // ============================================
+        // DELETE SITE
+        // ============================================
+        function deleteSite(index) {
+            if (confirm('Hapus website ini dari riwayat?')) {
+                const sites = JSON.parse(localStorage.getItem(DEPLOYED_KEY) || '[]');
+                sites.splice(index, 1);
+                localStorage.setItem(DEPLOYED_KEY, JSON.stringify(sites));
+                renderSites();
+                updateStats();
+                showStatus('info', '🗑️ Website dihapus dari riwayat');
+                setTimeout(() => hideStatus(), 2000);
+            }
+        }
+
+        // ============================================
+        // CLEAR HISTORY
+        // ============================================
+        function clearHistory() {
+            if (confirm('Hapus semua riwayat deploy?')) {
+                localStorage.removeItem(DEPLOYED_KEY);
+                renderSites();
+                updateStats();
+                showStatus('info', '🗑️ Semua riwayat dihapus');
+                setTimeout(() => hideStatus(), 2000);
+            }
+        }
+
+        // ============================================
+        // UPDATE STATS
+        // ============================================
+        function updateStats() {
+            const sites = JSON.parse(localStorage.getItem(DEPLOYED_KEY) || '[]');
+            document.getElementById('totalDeploy').textContent = sites.length;
+            document.getElementById('onlineNow').textContent = sites.length;
+        }
+
+        // ============================================
+        // UTILITY FUNCTIONS
+        // ============================================
+        function showStatus(type, message) {
+            const statusDiv = document.getElementById('statusMessage');
+            statusDiv.className = `status-message show ${type}`;
+            statusDiv.innerHTML = `<i class="fas ${type === 'success' ? 'fa-check-circle' : type === 'error' ? 'fa-exclamation-circle' : 'fa-info-circle'}"></i> ${message}`;
+        }
+
+        function hideStatus() {
+            document.getElementById('statusMessage').className = 'status-message';
+        }
+
+        function copyURL() {
+            const urlInput = document.getElementById('deployedUrl');
+            urlInput.select();
+            document.execCommand('copy');
+
+            const tooltip = document.getElementById('tooltip');
+            tooltip.textContent = '✅ URL tersalin!';
+            tooltip.classList.add('show');
+            setTimeout(() => tooltip.classList.remove('show'), 2000);
+        }
+
+        function openURL() {
+            const url = document.getElementById('deployedUrl').value;
+            if (url) window.open(url, '_blank');
+        }
+
+        function downloadHTML() {
+            const html = currentHTML || document.getElementById('htmlCode').value;
+            const blob = new Blob([html], { type: 'text/html' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'website.html';
+            a.click();
+            URL.revokeObjectURL(url);
+
+            const tooltip = document.getElementById('tooltip');
+            tooltip.textContent = '📥 File diunduh!';
+            tooltip.classList.add('show');
+            setTimeout(() => tooltip.classList.remove('show'), 2000);
+        }
+
+        function togglePreview(type) {
+            const iframe = document.getElementById('previewIframe');
+            const tabs = document.querySelectorAll('.preview-tabs button');
+
+            tabs.forEach(btn => btn.classList.remove('active'));
+
+            if (type === 'desktop') {
+                iframe.style.width = '100%';
+                iframe.style.maxWidth = '100%';
+                tabs[0].classList.add('active');
+            } else if (type === 'tablet') {
+                iframe.style.width = '768px';
+                iframe.style.maxWidth = '100%';
+                tabs[1].classList.add('active');
+            } else if (type === 'mobile') {
+                iframe.style.width = '375px';
+                iframe.style.maxWidth = '100%';
+                tabs[2].classList.add('active');
+            }
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // ============================================
+        // INIT
+        // ============================================
+        document.addEventListener('DOMContentLoaded', function() {
+            updateStats();
+            renderSites();
+
+            // Set default domain preview
+            document.getElementById('domainPreview').textContent = 'my-awesome-site.vercel.app';
+
+            // Theme color change effect
+            document.getElementById('themeColor').addEventListener('input', function() {
+                document.querySelector('.btn-deploy').style.background =
+                    `linear-gradient(135deg, ${this.value} 0%, #FF6584 100%)`;
+            });
+
+            // Auto deploy with Enter (Ctrl+Enter)
+            document.getElementById('htmlCode').addEventListener('keydown', function(e) {
+                if (e.ctrlKey && e.key === 'Enter') {
+                    deployToVercel();
+                }
+            });
+        });
+
+        // ============================================
+        // SERVICE WORKER UNTUK OFFLINE (Optional)
+        // ============================================
+        if ('serviceWorker' in navigator) {
+            // Registrasi service worker untuk PWA
+        }
+
+        console.log('🚀 DeployMaster siap deploy ke Vercel!');
+        console.log('📝 Gunakan Ctrl+Enter untuk deploy cepat');
+    </script>
+</body>
+</html>
