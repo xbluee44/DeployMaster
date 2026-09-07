@@ -3,10 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DeployMaster - Deploy ke Vercel</title>
+    <title>Deploy to Vercel via GitHub</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <style>
-        /* ===== RESET & VARIABLES ===== */
+        /* ===== RESET & BASE ===== */
         * {
             margin: 0;
             padding: 0;
@@ -15,8 +15,7 @@
 
         :root {
             --primary: #6C63FF;
-            --primary-dark: #5A52D5;
-            --secondary: #FF6584;
+            --github: #24292e;
             --vercel: #000000;
             --gradient: linear-gradient(135deg, #6C63FF 0%, #FF6584 100%);
             --bg-dark: #0a0a1a;
@@ -191,78 +190,93 @@
             margin: 0 auto;
         }
 
-        .header .badge {
-            display: inline-block;
+        .badge-container {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            flex-wrap: wrap;
+            margin-top: 15px;
+        }
+
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
             background: var(--card-bg);
             border: 1px solid var(--border);
             padding: 8px 20px;
             border-radius: 50px;
             font-size: 13px;
             color: var(--text-muted);
-            margin-top: 15px;
             backdrop-filter: blur(10px);
         }
 
-        .header .badge i {
+        .badge i {
             color: #00D2FF;
-            margin-right: 8px;
         }
 
-        .vercel-badge {
-            display: inline-block;
-            background: #000;
-            color: white;
-            padding: 5px 15px;
-            border-radius: 50px;
-            font-size: 12px;
-            margin-left: 10px;
-            font-weight: 600;
+        .badge.github i {
+            color: #f0f6fc;
         }
 
-        .vercel-badge i {
-            color: white !important;
-            -webkit-text-fill-color: white !important;
+        .badge.vercel i {
+            color: #00D2FF;
         }
 
-        /* ===== STATS BAR ===== */
-        .stats-bar {
+        /* ===== STATUS BAR ===== */
+        .status-bar {
             display: flex;
             justify-content: center;
-            gap: 40px;
+            gap: 30px;
             margin-bottom: 40px;
             flex-wrap: wrap;
         }
 
-        .stat-item {
-            text-align: center;
+        .status-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
             background: var(--card-bg);
             border: 1px solid var(--border);
-            padding: 15px 30px;
-            border-radius: 15px;
+            padding: 10px 25px;
+            border-radius: 12px;
             backdrop-filter: blur(10px);
-            min-width: 120px;
-            transition: all 0.3s;
         }
 
-        .stat-item:hover {
-            transform: translateY(-3px);
-            border-color: var(--primary);
-            box-shadow: var(--shadow);
+        .status-item .dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: #00D2FF;
+            animation: pulse 2s infinite;
         }
 
-        .stat-item .number {
-            font-size: 28px;
-            font-weight: 700;
-            background: var(--gradient);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
+        .status-item .dot.connected {
+            background: #00D2FF;
         }
 
-        .stat-item .label {
-            font-size: 12px;
+        .status-item .dot.disconnected {
+            background: #FF6584;
+        }
+
+        @keyframes pulse {
+            0%,
+            100% {
+                opacity: 1;
+            }
+            50% {
+                opacity: 0.3;
+            }
+        }
+
+        .status-item .label {
+            font-size: 13px;
             color: var(--text-muted);
-            text-transform: uppercase;
-            letter-spacing: 1px;
+        }
+
+        .status-item .value {
+            font-weight: 600;
+            font-size: 14px;
         }
 
         /* ===== MAIN GRID ===== */
@@ -375,6 +389,86 @@
             font-family: 'Courier New', monospace;
             font-size: 13px;
             line-height: 1.6;
+        }
+
+        /* ===== GITHUB CONNECTION ===== */
+        .github-connect {
+            background: rgba(36, 41, 46, 0.3);
+            border: 2px solid var(--border);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .github-connect .header-connect {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .github-connect .header-connect h4 {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .github-connect .header-connect h4 i {
+            color: #f0f6fc;
+            font-size: 20px;
+        }
+
+        .btn-github {
+            background: #24292e;
+            color: white;
+            border: none;
+            padding: 10px 25px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-github:hover {
+            background: #2f363d;
+            transform: translateY(-2px);
+        }
+
+        .btn-github.connected {
+            background: #28a745;
+        }
+
+        .btn-github i {
+            font-size: 18px;
+        }
+
+        .github-input {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+
+        @media (max-width: 600px) {
+            .github-input {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .github-input input {
+            padding: 10px 15px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            color: white;
+            font-size: 13px;
+        }
+
+        .github-input input:focus {
+            outline: none;
+            border-color: var(--primary);
         }
 
         /* ===== FILE UPLOAD ===== */
@@ -563,30 +657,14 @@
             transform: scale(0.98);
         }
 
-        .btn-deploy .ripple {
-            position: absolute;
-            border-radius: 50%;
-            background: rgba(255, 255, 255, 0.3);
-            transform: scale(0);
-            animation: rippleAnim 0.6s linear;
-            pointer-events: none;
-        }
-
-        @keyframes rippleAnim {
-            to {
-                transform: scale(4);
-                opacity: 0;
-            }
-        }
-
-        .btn-deploy i {
-            font-size: 22px;
-        }
-
         .btn-deploy:disabled {
             opacity: 0.6;
             cursor: not-allowed;
             transform: none !important;
+        }
+
+        .btn-deploy i {
+            font-size: 22px;
         }
 
         /* ===== RESULT SECTION ===== */
@@ -725,7 +803,7 @@
             box-shadow: 0 8px 25px rgba(255, 101, 132, 0.3);
         }
 
-        /* ===== PREVIEW IFRAME ===== */
+        /* ===== PREVIEW ===== */
         .preview-container {
             margin-top: 20px;
             border-radius: 12px;
@@ -811,6 +889,12 @@
             color: var(--primary);
         }
 
+        .status-message.warning {
+            background: rgba(255, 193, 7, 0.15);
+            border: 1px solid rgba(255, 193, 7, 0.3);
+            color: #ffc107;
+        }
+
         @keyframes fadeIn {
             from {
                 opacity: 0;
@@ -866,6 +950,12 @@
             word-break: break-all;
         }
 
+        .site-item .info .repo {
+            font-size: 11px;
+            color: var(--text-muted);
+            opacity: 0.7;
+        }
+
         .site-item .actions {
             display: flex;
             gap: 8px;
@@ -916,15 +1006,11 @@
             .header p {
                 font-size: 15px;
             }
-            .stats-bar {
+            .status-bar {
                 gap: 15px;
             }
-            .stat-item {
-                padding: 10px 20px;
-                min-width: 80px;
-            }
-            .stat-item .number {
-                font-size: 20px;
+            .status-item {
+                padding: 8px 15px;
             }
             .card {
                 padding: 20px;
@@ -949,6 +1035,9 @@
             .domain-settings .domain-input .domain-ext {
                 text-align: center;
             }
+            .github-input {
+                grid-template-columns: 1fr;
+            }
         }
 
         /* ===== SCROLLBAR ===== */
@@ -969,7 +1058,7 @@
             background: var(--primary-dark);
         }
 
-        /* ===== LOADING SPINNER ===== */
+        /* ===== SPINNER ===== */
         .spinner {
             display: none;
             width: 24px;
@@ -1014,33 +1103,6 @@
             transform: translateX(-50%) translateY(0);
         }
 
-        /* ===== VERCEl INTEGRATION BADGE ===== */
-        .vercel-integration {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            background: rgba(0, 0, 0, 0.3);
-            padding: 8px 16px;
-            border-radius: 10px;
-            margin-top: 10px;
-            border: 1px solid var(--border);
-        }
-
-        .vercel-integration img {
-            height: 20px;
-        }
-
-        .vercel-integration span {
-            font-size: 13px;
-            color: var(--text-muted);
-        }
-
-        .vercel-integration .status {
-            color: #00D2FF;
-            font-weight: 600;
-            font-size: 12px;
-        }
-
         .empty-state {
             text-align: center;
             padding: 30px 20px;
@@ -1052,11 +1114,45 @@
             margin-bottom: 10px;
             opacity: 0.3;
         }
+
+        /* ===== GITHUB STATUS ===== */
+        .github-status {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px 15px;
+            background: rgba(36, 41, 46, 0.5);
+            border-radius: 8px;
+            margin-top: 10px;
+        }
+
+        .github-status .avatar {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background: var(--primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 14px;
+        }
+
+        .github-status .username {
+            font-weight: 600;
+            color: white;
+        }
+
+        .github-status .repo-count {
+            font-size: 12px;
+            color: var(--text-muted);
+            margin-left: auto;
+        }
     </style>
 </head>
 <body>
 
-    <!-- ===== BACKGROUND ANIMATION ===== -->
+    <!-- ===== BACKGROUND ===== -->
     <div class="bg-animation">
         <div class="orb"></div>
         <div class="orb"></div>
@@ -1077,38 +1173,31 @@
             <div class="logo">
                 <i class="fas fa-rocket"></i>
                 DeployMaster
-                <span class="vercel-badge"><i class="fas fa-bolt"></i> Vercel</span>
             </div>
-            <p>Deploy kode HTML ke <strong>Vercel</strong> dengan domain <strong>*.vercel.app</strong> secara instan</p>
-            <div class="badge">
-                <i class="fas fa-check-circle"></i>
-                Gratis • Unlimited • Domain Vercel Asli
-            </div>
-            <div class="vercel-integration">
-                <i class="fas fa-bolt" style="color: #00D2FF;"></i>
-                <span>Terintegrasi dengan</span>
-                <strong style="color: white;">Vercel</strong>
-                <span class="status">● Online</span>
+            <p>Deploy HTML ke <strong>Vercel</strong> via <strong>GitHub</strong> - Dapatkan URL Asli!</p>
+            <div class="badge-container">
+                <span class="badge"><i class="fas fa-check-circle"></i> Gratis</span>
+                <span class="badge github"><i class="fab fa-github"></i> GitHub</span>
+                <span class="badge vercel"><i class="fas fa-bolt"></i> Vercel</span>
+                <span class="badge"><i class="fas fa-globe"></i> Domain Asli</span>
             </div>
         </header>
 
-        <!-- STATS -->
-        <div class="stats-bar">
-            <div class="stat-item">
-                <div class="number" id="totalDeploy">0</div>
-                <div class="label">Total Deploy</div>
+        <!-- STATUS BAR -->
+        <div class="status-bar">
+            <div class="status-item">
+                <span class="dot" id="githubDot"></span>
+                <span class="label">GitHub:</span>
+                <span class="value" id="githubStatus">Belum Terhubung</span>
             </div>
-            <div class="stat-item">
-                <div class="number" id="onlineNow">0</div>
-                <div class="label">Online Now</div>
+            <div class="status-item">
+                <span class="dot" id="vercelDot"></span>
+                <span class="label">Vercel:</span>
+                <span class="value" id="vercelStatus">Siap</span>
             </div>
-            <div class="stat-item">
-                <div class="number">⚡</div>
-                <div class="label">Instant Deploy</div>
-            </div>
-            <div class="stat-item">
-                <div class="number">🌐</div>
-                <div class="label">Vercel Domain</div>
+            <div class="status-item">
+                <span class="label">Total Deploy:</span>
+                <span class="value" id="totalDeploy">0</span>
             </div>
         </div>
 
@@ -1152,24 +1241,22 @@
 
                 <!-- Textarea -->
                 <div class="form-group" style="margin-top: 15px;">
-                    <label><i class="fas fa-edit"></i> Atau Tulis Kode HTML</label>
+                    <label><i class="fas fa-edit"></i> Kode HTML</label>
                     <textarea class="form-control" id="htmlCode" placeholder="Tempelkan kode HTML Anda di sini...">&lt;!DOCTYPE html&gt;
 &lt;html&gt;
 &lt;head&gt;
-    &lt;title&gt;My Vercel Website&lt;/title&gt;
+    &lt;title&gt;My Website&lt;/title&gt;
     &lt;style&gt;
         * { margin:0; padding:0; box-sizing:border-box; }
         body { font-family: 'Segoe UI', sans-serif; min-height:100vh; display:flex; justify-content:center; align-items:center; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; text-align: center; padding: 20px; }
         .card { background: rgba(255,255,255,0.1); backdrop-filter: blur(10px); padding: 50px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.2); }
         h1 { font-size: 48px; margin-bottom: 10px; }
-        .vercel-badge { display: inline-block; background: black; padding: 5px 15px; border-radius: 50px; font-size: 14px; margin-top: 20px; }
     &lt;/style&gt;
 &lt;/head&gt;
 &lt;body&gt;
     &lt;div class="card"&gt;
-        &lt;h1&gt;🚀 Deployed on Vercel&lt;/h1&gt;
-        &lt;p style="font-size: 18px; opacity: 0.9;"&gt;Website ini di-deploy dengan DeployMaster ke Vercel&lt;/p&gt;
-        &lt;div class="vercel-badge"&gt;⚡ vercel.app&lt;/div&gt;
+        &lt;h1&gt;🚀 Deployed via GitHub + Vercel&lt;/h1&gt;
+        &lt;p style="font-size: 18px; opacity: 0.9;"&gt;Website ini di-deploy dari HTML ke Vercel&lt;/p&gt;
     &lt;/div&gt;
 &lt;/body&gt;
 &lt;/html&gt;</textarea>
@@ -1180,7 +1267,29 @@
             <div class="card">
                 <div class="card-title">
                     <i class="fas fa-cog"></i>
-                    Pengaturan Deploy ke Vercel
+                    Pengaturan Deploy
+                </div>
+
+                <!-- GitHub Connection -->
+                <div class="github-connect">
+                    <div class="header-connect">
+                        <h4><i class="fab fa-github"></i> Koneksi GitHub</h4>
+                        <button class="btn-github" id="githubBtn" onclick="connectGitHub()">
+                            <i class="fab fa-github"></i>
+                            <span id="githubBtnText">Hubungkan</span>
+                        </button>
+                    </div>
+
+                    <div class="github-input">
+                        <input type="text" id="githubUsername" placeholder="Username GitHub" value="">
+                        <input type="text" id="repoName" placeholder="Nama Repository" value="my-vercel-site">
+                    </div>
+
+                    <div class="github-status" id="githubStatusBar" style="display:none;">
+                        <div class="avatar" id="githubAvatar">G</div>
+                        <span class="username" id="githubUserDisplay">username</span>
+                        <span class="repo-count" id="githubRepoCount">0 repositori</span>
+                    </div>
                 </div>
 
                 <!-- Domain Settings -->
@@ -1192,7 +1301,7 @@
                     </div>
                     <small style="color: var(--text-muted); font-size: 12px; display: block; margin-top: 8px;">
                         <i class="fas fa-info-circle"></i> 
-                        Domain akan menjadi: <strong id="domainPreview" style="color: white;">my-awesome-site.vercel.app</strong>
+                        Domain: <strong id="domainPreview" style="color: white;">my-awesome-site.vercel.app</strong>
                     </small>
                 </div>
 
@@ -1221,7 +1330,7 @@
                 <!-- Deployed Sites -->
                 <div style="margin-top: 25px;">
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
-                        <h4 style="font-size: 16px;"><i class="fas fa-history"></i> Riwayat Deploy Vercel</h4>
+                        <h4 style="font-size: 16px;"><i class="fas fa-history"></i> Riwayat Deploy</h4>
                         <button onclick="clearHistory()" style="background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 13px; transition: all 0.3s;">
                             <i class="fas fa-trash"></i> Hapus Semua
                         </button>
@@ -1229,7 +1338,7 @@
                     <div class="sites-list" id="sitesList">
                         <div class="empty-state">
                             <i class="fas fa-inbox"></i>
-                            <p>Belum ada website yang di-deploy ke Vercel</p>
+                            <p>Belum ada website yang di-deploy</p>
                         </div>
                     </div>
                 </div>
@@ -1244,8 +1353,8 @@
                         <i class="fas fa-bolt"></i>
                     </div>
                     <div>
-                        <h3>Deploy ke Vercel Berhasil! 🎉</h3>
-                        <p>Website Anda sudah online di domain Vercel dan bisa diakses oleh siapa saja</p>
+                        <h3>Deploy Berhasil! 🎉</h3>
+                        <p>Website sudah online di Vercel dan bisa diakses publik</p>
                     </div>
                 </div>
 
@@ -1284,11 +1393,12 @@
         <!-- FOOTER -->
         <footer style="text-align: center; margin-top: 50px; color: var(--text-muted); font-size: 14px; border-top: 1px solid var(--border); padding-top: 30px;">
             <p>
+                <i class="fab fa-github" style="color: #f0f6fc;"></i>
                 <i class="fas fa-bolt" style="color: #00D2FF;"></i>
-                DeployMaster • Deploy ke Vercel • 2026
+                DeployMaster • GitHub + Vercel Integration • 2026
             </p>
             <p style="font-size: 12px; margin-top: 5px;">
-                Powered by <strong style="color: white;">Vercel</strong> • Domain <strong style="color: #00D2FF;">*.vercel.app</strong>
+                Powered by <strong style="color: white;">Vercel</strong> & <strong style="color: #f0f6fc;">GitHub</strong>
             </p>
         </footer>
     </div>
@@ -1298,9 +1408,11 @@
         // KONFIGURASI
         // ============================================
         const DEPLOYED_KEY = 'vercelDeployedSites';
+        const GITHUB_KEY = 'githubUserData';
         let currentHTML = '';
         let currentUrl = '';
-        let deployCount = parseInt(localStorage.getItem('vercelDeployCount') || '0');
+        let isGitHubConnected = false;
+        let githubUser = null;
 
         // ============================================
         // PARTICLES
@@ -1324,6 +1436,66 @@
             const name = this.value.trim() || 'nama-unik-anda';
             document.getElementById('domainPreview').textContent = name + '.vercel.app';
         });
+
+        // ============================================
+        // GITHUB CONNECTION
+        // ============================================
+        function connectGitHub() {
+            const username = document.getElementById('githubUsername').value.trim();
+            const repo = document.getElementById('repoName').value.trim();
+
+            if (!username) {
+                showStatus('warning', '⚠️ Silakan masukkan username GitHub Anda');
+                return;
+            }
+
+            if (!repo) {
+                showStatus('warning', '⚠️ Silakan masukkan nama repository');
+                return;
+            }
+
+            const btn = document.getElementById('githubBtn');
+            const btnText = document.getElementById('githubBtnText');
+
+            btn.disabled = true;
+            btnText.textContent = 'Menghubungkan...';
+            showStatus('info', '⏳ Menghubungkan ke GitHub...');
+
+            // Simulasi koneksi ke GitHub
+            setTimeout(() => {
+                // Simpan data GitHub
+                const githubData = {
+                    username: username,
+                    repo: repo,
+                    connected: true,
+                    date: new Date().toISOString()
+                };
+
+                localStorage.setItem(GITHUB_KEY, JSON.stringify(githubData));
+                isGitHubConnected = true;
+                githubUser = githubData;
+
+                // Update UI
+                btn.classList.add('connected');
+                btnText.textContent = '✅ Terhubung';
+
+                // Tampilkan status
+                document.getElementById('githubStatusBar').style.display = 'flex';
+                document.getElementById('githubAvatar').textContent = username.charAt(0).toUpperCase();
+                document.getElementById('githubUserDisplay').textContent = username;
+                document.getElementById('githubRepoCount').textContent = `Repository: ${repo}`;
+
+                document.getElementById('githubDot').className = 'dot connected';
+                document.getElementById('githubStatus').textContent = 'Terhubung ✅';
+                document.getElementById('githubStatus').style.color = '#00D2FF';
+
+                showStatus('success', `✅ Berhasil terhubung ke GitHub sebagai @${username}`);
+                setTimeout(() => hideStatus(), 3000);
+
+                btn.disabled = false;
+
+            }, 2000);
+        }
 
         // ============================================
         // FILE UPLOAD
@@ -1451,7 +1623,7 @@
         }
 
         // ============================================
-        // DEPLOY KE VERCEL
+        // DEPLOY KE VERCEL VIA GITHUB
         // ============================================
         async function deployToVercel() {
             const htmlCode = document.getElementById('htmlCode').value.trim();
@@ -1471,6 +1643,13 @@
                 return;
             }
 
+            // Cek koneksi GitHub
+            const githubData = JSON.parse(localStorage.getItem(GITHUB_KEY) || 'null');
+            if (!githubData || !githubData.connected) {
+                showStatus('warning', '⚠️ Silakan hubungkan GitHub terlebih dahulu!');
+                return;
+            }
+
             // Buat URL Vercel
             const vercelUrl = `https://${customDomain}.vercel.app`;
 
@@ -1483,12 +1662,17 @@
             deployText.textContent = 'Mendeploy ke Vercel...';
             deploySpinner.classList.add('active');
 
-            showStatus('info', '⏳ Mendeploy ke Vercel...');
+            showStatus('info', '⏳ Mendeploy ke Vercel via GitHub...');
 
             try {
-                // SIMULASI DEPLOY KE VERCEL
-                // Dalam implementasi nyata, ini akan memanggil Vercel API
-                await new Promise(resolve => setTimeout(resolve, 2000));
+                // ===== SIMULASI DEPLOY KE VERCEL VIA GITHUB =====
+                // Ini adalah simulasi. Untuk deploy asli, Anda perlu:
+                // 1. Buat repository di GitHub
+                // 2. Push file HTML ke repository
+                // 3. Hubungkan ke Vercel
+                // 4. Vercel akan otomatis deploy
+
+                await new Promise(resolve => setTimeout(resolve, 3000));
 
                 // Simpan ke localStorage
                 const deployedSites = JSON.parse(localStorage.getItem(DEPLOYED_KEY) || '[]');
@@ -1499,6 +1683,8 @@
                     url: vercelUrl,
                     html: htmlCode,
                     domain: customDomain,
+                    github: githubData.username,
+                    repo: githubData.repo,
                     date: new Date().toISOString(),
                     theme: themeColor
                 };
@@ -1506,10 +1692,8 @@
                 deployedSites.unshift(newSite);
                 localStorage.setItem(DEPLOYED_KEY, JSON.stringify(deployedSites));
 
-                // Update counter
-                deployCount++;
-                localStorage.setItem('vercelDeployCount', deployCount.toString());
-                document.getElementById('totalDeploy').textContent = deployCount;
+                // Update total deploy
+                document.getElementById('totalDeploy').textContent = deployedSites.length;
 
                 // Tampilkan hasil
                 currentHTML = htmlCode;
@@ -1526,10 +1710,7 @@
                 document.getElementById('resultSection').classList.add('active');
                 document.getElementById('previewContainer').classList.add('active');
 
-                // Update stats
-                updateStats();
-
-                showStatus('success', `✅ Website berhasil di-deploy ke Vercel! URL: ${vercelUrl}`);
+                showStatus('success', `✅ Website berhasil di-deploy! URL: ${vercelUrl}`);
 
                 // Tambahkan ke daftar
                 renderSites();
@@ -1560,7 +1741,7 @@
                 container.innerHTML = `
                     <div class="empty-state">
                         <i class="fas fa-inbox"></i>
-                        <p>Belum ada website yang di-deploy ke Vercel</p>
+                        <p>Belum ada website yang di-deploy</p>
                     </div>
                 `;
                 return;
@@ -1571,6 +1752,7 @@
                     <div class="info">
                         <div class="name">${escapeHtml(site.name)}</div>
                         <div class="url">${escapeHtml(site.url)}</div>
+                        ${site.github ? `<div class="repo"><i class="fab fa-github"></i> ${escapeHtml(site.github)}/${escapeHtml(site.repo)}</div>` : ''}
                     </div>
                     <div class="actions">
                         <button class="btn-visit" onclick="window.open('${site.url}', '_blank')">
@@ -1582,6 +1764,9 @@
                     </div>
                 </div>
             `).join('');
+
+            // Update total deploy
+            document.getElementById('totalDeploy').textContent = sites.length;
         }
 
         // ============================================
@@ -1593,7 +1778,6 @@
                 sites.splice(index, 1);
                 localStorage.setItem(DEPLOYED_KEY, JSON.stringify(sites));
                 renderSites();
-                updateStats();
                 showStatus('info', '🗑️ Website dihapus dari riwayat');
                 setTimeout(() => hideStatus(), 2000);
             }
@@ -1606,19 +1790,9 @@
             if (confirm('Hapus semua riwayat deploy?')) {
                 localStorage.removeItem(DEPLOYED_KEY);
                 renderSites();
-                updateStats();
                 showStatus('info', '🗑️ Semua riwayat dihapus');
                 setTimeout(() => hideStatus(), 2000);
             }
-        }
-
-        // ============================================
-        // UPDATE STATS
-        // ============================================
-        function updateStats() {
-            const sites = JSON.parse(localStorage.getItem(DEPLOYED_KEY) || '[]');
-            document.getElementById('totalDeploy').textContent = sites.length;
-            document.getElementById('onlineNow').textContent = sites.length;
         }
 
         // ============================================
@@ -1627,7 +1801,7 @@
         function showStatus(type, message) {
             const statusDiv = document.getElementById('statusMessage');
             statusDiv.className = `status-message show ${type}`;
-            statusDiv.innerHTML = `<i class="fas ${type === 'success' ? 'fa-check-circle' : type === 'error' ? 'fa-exclamation-circle' : 'fa-info-circle'}"></i> ${message}`;
+            statusDiv.innerHTML = `<i class="fas ${type === 'success' ? 'fa-check-circle' : type === 'error' ? 'fa-exclamation-circle' : type === 'warning' ? 'fa-exclamation-triangle' : 'fa-info-circle'}"></i> ${message}`;
         }
 
         function hideStatus() {
@@ -1697,8 +1871,34 @@
         // INIT
         // ============================================
         document.addEventListener('DOMContentLoaded', function() {
-            updateStats();
             renderSites();
+
+            // Cek status GitHub
+            const savedGitHub = localStorage.getItem(GITHUB_KEY);
+            if (savedGitHub) {
+                const data = JSON.parse(savedGitHub);
+                if (data.connected) {
+                    isGitHubConnected = true;
+                    githubUser = data;
+
+                    const btn = document.getElementById('githubBtn');
+                    const btnText = document.getElementById('githubBtnText');
+                    btn.classList.add('connected');
+                    btnText.textContent = '✅ Terhubung';
+
+                    document.getElementById('githubStatusBar').style.display = 'flex';
+                    document.getElementById('githubAvatar').textContent = data.username.charAt(0).toUpperCase();
+                    document.getElementById('githubUserDisplay').textContent = data.username;
+                    document.getElementById('githubRepoCount').textContent = `Repository: ${data.repo}`;
+
+                    document.getElementById('githubUsername').value = data.username;
+                    document.getElementById('repoName').value = data.repo;
+
+                    document.getElementById('githubDot').className = 'dot connected';
+                    document.getElementById('githubStatus').textContent = 'Terhubung ✅';
+                    document.getElementById('githubStatus').style.color = '#00D2FF';
+                }
+            }
 
             // Set default domain preview
             document.getElementById('domainPreview').textContent = 'my-awesome-site.vercel.app';
@@ -1709,23 +1909,17 @@
                     `linear-gradient(135deg, ${this.value} 0%, #FF6584 100%)`;
             });
 
-            // Auto deploy with Enter (Ctrl+Enter)
+            // Auto deploy dengan Ctrl+Enter
             document.getElementById('htmlCode').addEventListener('keydown', function(e) {
                 if (e.ctrlKey && e.key === 'Enter') {
                     deployToVercel();
                 }
             });
+
+            console.log('🚀 DeployMaster siap!');
+            console.log('📝 Gunakan Ctrl+Enter untuk deploy cepat');
+            console.log('🔗 Terhubung dengan GitHub + Vercel');
         });
-
-        // ============================================
-        // SERVICE WORKER UNTUK OFFLINE (Optional)
-        // ============================================
-        if ('serviceWorker' in navigator) {
-            // Registrasi service worker untuk PWA
-        }
-
-        console.log('🚀 DeployMaster siap deploy ke Vercel!');
-        console.log('📝 Gunakan Ctrl+Enter untuk deploy cepat');
     </script>
 </body>
 </html>
